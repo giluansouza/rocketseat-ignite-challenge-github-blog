@@ -70,7 +70,7 @@ export function Home() {
       <SearchContainer>
         <div>
           <p>Publicações</p>
-          <span>6 publicações</span>
+          <span>{posts.length} publicações</span>
         </div>
         <input type='text' placeholder='Buscar conteúdos' />
       </SearchContainer>
