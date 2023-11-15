@@ -1,11 +1,11 @@
-import { Card, MainContainer, MainContent, ProfileContainer, ProfileContent, ProfileHeader, ProfileSocial, SearchContainer } from './styles'
+import { MainContainer, MainContent, ProfileContainer, ProfileContent, ProfileHeader, ProfileSocial, SearchContainer } from './styles'
 
-import avatar from '../../assets/avatar.png'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faGithub } from '@fortawesome/free-brands-svg-icons'
 import { faArrowUpRightFromSquare, faBuilding, faUserGroup } from '@fortawesome/free-solid-svg-icons'
 import { api } from '../../lib/axios'
 import { useEffect, useState } from 'react'
+import { CardPost } from '../../components/Post'
 
 interface User {
   name: string
@@ -17,18 +17,33 @@ interface User {
   bio: string
 }
 
+interface Posts {
+  title: string
+  body: string
+  date: string
+  created_at: string
+  number: number
+}
+
 export function Home() {
   const [user, setUser] = useState<User | null>(null)
+  const [posts, setPosts] = useState<Posts[] | []>([])
 
   async function getUser() {
     const response = await api.get('/users/giluansouza')
 
-    console.log(response.data)
     setUser(response.data)
+  }
+
+  async function getPosts() {
+    const response = await api.get('/search/issues?q=repo:giluansouza/rocketseat-ignite-github-blog')
+
+    setPosts(response.data.items)
   }
 
   useEffect(() => {
     getUser()
+    getPosts()
   }, [])
 
   return (
@@ -60,57 +75,9 @@ export function Home() {
         <input type='text' placeholder='Buscar conteúdos' />
       </SearchContainer>
       <MainContent>
-        <Card>
-          <header>
-            <h2>JavaScript data types and data structures</h2>
-            <span>Há 1 dia</span>
-          </header>
-          <p>
-            Programming languages all have built-in data structures, 
-            but these often differ from one language to another. 
-            This article attempts to list the built-in data structures 
-            available in ...
-          </p>
-        </Card>
-
-        <Card>
-          <header>
-            <h2>JavaScript data types and data structures</h2>
-            <span>Há 1 dia</span>
-          </header>
-          <p>
-            Programming languages all have built-in data structures, 
-            but these often differ from one language to another. 
-            This article attempts to list the built-in data structures 
-            available in ...
-          </p>
-        </Card>
-
-        <Card>
-          <header>
-            <h2>JavaScript data types and data structures</h2>
-            <span>Há 1 dia</span>
-          </header>
-          <p>
-            Programming languages all have built-in data structures, 
-            but these often differ from one language to another. 
-            This article attempts to list the built-in data structures 
-            available in ...
-          </p>
-        </Card>
-
-        <Card>
-          <header>
-            <h2>JavaScript data types and data structures</h2>
-            <span>Há 1 dia</span>
-          </header>
-          <p>
-            Programming languages all have built-in data structures, 
-            but these often differ from one language to another. 
-            This article attempts to list the built-in data structures 
-            available in ...
-          </p>
-        </Card>
+        {posts.map((post) => (
+          <CardPost key={post.title} {...post} />
+        ))}
       </MainContent>
     </MainContainer>
   )

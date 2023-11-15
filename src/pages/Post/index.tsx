@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from 'react'
 import { 
   HeaderPostContainer,
   HeaderPostContent,
@@ -11,9 +12,36 @@ import {
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faGithub } from '@fortawesome/free-brands-svg-icons'
 import { faArrowUpRightFromSquare, faBuilding, faChevronLeft, faUserGroup } from '@fortawesome/free-solid-svg-icons'
-import { NavLink } from 'react-router-dom'
+import { NavLink, useParams } from 'react-router-dom'
+import { api } from '../../lib/axios'
+import ReactMarkdown from 'react-markdown'
+import {Prism as SyntaxHighlighter} from 'react-syntax-highlighter'
+import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism'
+
+interface Post {
+  title: string
+  body: string
+  date: string
+  created_at: string
+  number: number
+}
 
 export function Post() {
+  const [post, setPost] = useState<Post | null>(null)
+  const issueNumber = Number(useParams().id)
+  const ref = useRef(null)
+
+  async function getIssue() {
+    const response = await api.get(`/repos/giluansouza/rocketseat-ignite-github-blog/issues/${issueNumber}`)
+
+    setPost(response.data)
+  }
+
+  useEffect(() => {
+    getIssue()
+    console.log(post)
+  }, [])
+
   return (
     <MainContainer>
       <HeaderPostContainer>
@@ -27,7 +55,7 @@ export function Post() {
             </a>
           </HeaderPostHeader>
           <h2>
-            JavaScript data types and data structures
+            {post?.title}
           </h2>
           <HeaderPostSocial>
             <a><FontAwesomeIcon icon={faGithub} /> cameronwll</a>
@@ -40,24 +68,27 @@ export function Post() {
       <PostContainer>
 
         <PostContent>
-          <p>
-            <b>Programming languages all have built-in data structures, 
-            but these often differ from one language to another.</b> 
-            This article attempts to list the built-in data structures available in JavaScript and what properties they have. 
-            These can be used to build other data structures. Wherever possible, comparisons with other languages are drawn.
-          </p>
-
-          <a href="#">Dynamic typing</a>
-
-          <p>
-            JavaScript is a loosely typed and dynamic language. Variables in JavaScript are not directly associated with any particular value type, and any variable can be assigned (and re-assigned) values of all types:
-          </p>
-
-          <div>
-            <p>let foo = 42;   // foo is now a number</p>
-            <p>foo = ‘bar’;    // foo is now a string</p>
-            <p>foo = true;     // foo is now a boolean</p>
-          </div>
+          <ReactMarkdown children={post?.body}
+            components={{
+              code({node, className, children, ...props}) {
+                const match = /language-(\w+)/.exec(className || '')
+                return match ? (
+                  <SyntaxHighlighter
+                    children={String(children).replace(/\n$/, '')}
+                    style={{ ...oneDark } as any}
+                    language={match[1]}
+                    PreTag="div"
+                    ref={ref as any}
+                    {...props}
+                  />
+                ) : (
+                  <code className={className} {...props}>
+                    {children}
+                  </code>
+                )
+              }
+            }}
+          />
         </PostContent>
 
       </PostContainer>
